@@ -12,7 +12,7 @@ from .view.department.department import get_departments_by_userid, get_departmen
 from .view.department.document import upload_document, list_documents, delete_document, get_document_by_id, \
     get_counts_document, get_documentby_doc_id, update_document
 from .view.login_view import signup, signin, logout, captcha_image, send_otp, update_profile, change_password, \
-    get_profile_details
+    get_profile_details, create_password, otp_verification
 from .views import create_grievance, update_grievance, delete_grievance, view_grievance, view_grievance_by_userid, \
     get_grievances_by_userorgkid
 
@@ -20,6 +20,7 @@ urlpatterns = [
     path('signup/', signup, name='signup'),
     path('captcha/', captcha_image, name='captcha_image'),
     path('sendOTP/', send_otp, name='send_otp'),
+    path('otpVerification/', otp_verification, name='otp_verification'),
     path('signin/', signin, name='signin'),
     path('logout/', logout, name='logout'),
     path('grievances/', create_grievance, name='create_grievance'),
@@ -63,6 +64,7 @@ urlpatterns = [
     path('user/updateCategory/', update_category, name='update_category'),
     path('user/deleteCategory/', delete_category, name="delete_category"),
     path('user/changePassword/', change_password, name="change_password"),
+    path('createPassword/', create_password, name='create_password'),
     path('user/getDepartmentFileStorageReport/', get_department_file_storage_report, name="get_department_file_storage_report"),
     path('user/downloadExcelReport/', download_excel_report, name="download_excel_report"),
     path('departments/addSubCategory/', add_sub_category, name="add_sub_category"),

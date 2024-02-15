@@ -187,3 +187,27 @@ CORS_ORIGIN_WHITELIST = [
     'http://192.168.0.117:3001',  # Whitelist your Angular app's domain
     # Add other allowed origins as needed
 ]
+
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'formatters': {
+        'verbose': {
+            'format': '{levelname} {asctime} {module} {lineno} {message}',  # Include {message}
+            'style': '{',
+        },
+    },
+    'handlers': {
+        'console': {
+            'level': 'INFO',
+            'class': 'logging.StreamHandler',
+            'formatter': 'verbose',
+        },
+    },
+    'loggers': {
+        'django': {
+            'handlers': ['console'],
+            'level': 'INFO',
+        },
+    },
+}

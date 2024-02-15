@@ -1,4 +1,5 @@
 import base64
+import logging
 import os
 import uuid
 from datetime import datetime, timedelta
@@ -12,33 +13,106 @@ from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import RefreshToken
 
-from ..models import User
+from ..models import User, OTP
 from ..serializer.department import UserSerializer
+from ..utils.TOTPUtils import verify_otp
 from ..utils.common import get_file_extension, create_unique_name
 from ..utils.decoraters import IsAuthenticated, AllowAll
 from ..utils.forms import LoginForm, generate_captcha, generate_captcha_image, store_captcha_with_identifier, \
-    get_captcha_from_storage, encode_password
-from ..utils.validators import validate_phone_number
+    get_captcha_from_storage
+from ..utils.validators import validate_phone_number, validate_email
+
+logger = logging.getLogger(__name__)
+
+logger.setLevel(logging.INFO)
 
 
 @api_view(['POST'])
 def send_otp(request):
     email = request.data.get('email')
+    if not email:
+        return Response({'statusCode': '0', 'error': 'Please provide email'}, status=400)
+    print("email", email)
+    is_valid = validate_email(email)
+    if is_valid:
+        return Response({'statusCode': '0', 'error': is_valid}, status=400)
 
-    # Generate a secure random base32 secret
     secret = pyotp.random_base32()
-
-    # Generate OTP using the generated secret
     totp = pyotp.TOTP(secret)
     otp = totp.now()
-
+    print(otp)
+    logger.info("OTP: %s", otp)
     # Send OTP via email
     subject = 'Verification OTP'
-    message = f'Your OTP for signup: {otp}'
+    message = f'''Your OTP is: {otp}
+    It is valid for 10 minutes.
+    
+    WARNING: Please do not share this OTP with anyone.'''
+    try:
+        result = send_mail(subject, message, None, [email])
+        print(result)
+        if result == 1:
+            save_otp_db(email, secret, otp)
+            return Response({'statusCode': '1', 'message': 'OTP sent to your email'}, status=200)
+        else:
+            return Response({'statusCode': '0', 'error': 'Something Went Wrong!'}, status=400)
+    except Exception as e:
+        return Response({'error': str(e)}, status=500)
+
+
+@api_view(['POST'])
+def otp_verification(request):
+    email = request.data.get('email')
+    otp = request.data.get('otp')
+    if not email:
+        return Response({'statusCode': '0', 'error': 'Please provide email'}, status=400)
+    is_valid = validate_email(email)
+    if is_valid:
+        return Response({'statusCode': '0', 'error': is_valid}, status=400)
 
     try:
-        send_mail(subject, message, None, [email])
-        return Response({'message': 'OTP sent to your email'}, status=200)
+        if not User.objects.filter(email=email).exists():
+            return Response({'statusCode': '0', 'error': 'Email is not registered'}, status=400)
+        if verify_otp(otp, email):
+            return Response({'statusCode': '1', 'message': 'otp is valid', 'data': 1}, status=200)
+        else:
+            return Response({'statusCode': '0', 'message': 'invalid otp', 'data': 0}, status=200)
+    except Exception as e:
+        return Response({'error': str(e)}, status=500)
+
+
+def save_otp_db(email, secret, otp):
+    otp_instance = OTP(key=email, otp_secret=secret, otp=otp)
+    otp_instance.save()
+
+
+@api_view(['POST'])
+def create_password(request):
+    email = request.data.get('email')
+    password = request.data.get('password')
+    confirm_password = request.data.get('confirm_password')
+
+    if not email:
+        return Response({'statusCode': '0', 'error': 'Please provide email'}, status=400)
+    if not password:
+        return Response({'statusCode': '0', 'error': 'Please provide password'}, status=400)
+    if not confirm_password:
+        return Response({'statusCode': '0', 'error': 'Please provide confirm password'}, status=400)
+    is_valid = validate_email(email)
+    if is_valid:
+        return Response({'statusCode': '0', 'error': is_valid}, status=400)
+
+    try:
+        if not User.objects.filter(email=email).exists():
+            return Response({'statusCode': '0', 'error': 'Email is not registered'}, status=400)
+        if password != confirm_password:
+            return Response({'statusCode': '0', 'messege': 'password and confirm password does not match.'}, status=400)
+
+        user = User.objects.get(email=email)
+        # user.password = confirm_password
+        user.set_password(confirm_password)
+        user.save()
+        return Response({'statusCode': '1', 'message': 'password created'}, status=200)
     except Exception as e:
         return Response({'error': str(e)}, status=500)
 
@@ -67,6 +141,10 @@ def signup(request):
         return Response({'statusCode': '0', 'error': 'Please provide phone number'}, status=400)
     if not profile_pic:
         return Response({'statusCode': '0', 'error': 'Please provide profile pic'}, status=400)
+
+    is_valid_email = validate_email(email)
+    if is_valid_email:
+        return Response({'statusCode': '0', 'error': is_valid_email}, status=400)
 
     if User.objects.filter(email=email).exists():
         return Response({'statusCode': '0', 'error': 'Email already Exists'}, status=200)
@@ -160,16 +238,17 @@ def signin(request):
     if form.is_valid():
         email = form.cleaned_data.get('email')
         password = form.cleaned_data.get('password')
-        salt = captcha  # Assuming salt is sent along with the password
-        # decrypted_password = encrypt_password_with_salt(password, salt, 1)
-        decrypted_password = encode_password(password, 1)
+        if not email:
+            return Response({'statusCode': '0', 'error': 'Please provide email'}, status=400)
+
+        if not password:
+            return Response({'statusCode': '0', 'error': 'Please provide password'}, status=400)
+
+        is_valid = validate_email(email)
+        if is_valid:
+            return Response({'statusCode': '0', 'error': is_valid}, status=400)
 
         user = User.objects.filter(email=email).first()
-
-        # if check_password(decrypted_password, user.password):
-        #     print("matcheddddddddddd")
-        # else:
-        #     print("better luck next time")
         if captcha != captcha_challenge:
             return Response({'statusCode': '0', 'error': 'Invalid CAPTCHA. Please try again.'}, status=400)
 
@@ -346,7 +425,8 @@ def change_password(request):
 
         if user.check_password(old_password):
             if new_password == confirm_password:
-                user.password = new_password
+                # user.password = new_password
+                user.set_password(new_password)
                 user.save()
                 return Response({'data': 'Password update successful.', 'statusCode': '1'},
                                 status=200)

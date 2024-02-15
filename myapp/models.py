@@ -5,7 +5,8 @@ from .utils.common import document_upload_path
 
 
 class UserManager(BaseUserManager):
-    def create_user(self, email, username, first_name, last_name, phone_no, profile_pic, password=None, is_active=True, is_admin=False, **extra_fields):
+    def create_user(self, email, username, first_name, last_name, phone_no, profile_pic, password=None, is_active=True,
+                    is_admin=False, **extra_fields):
         if not email:
             raise ValueError('Please Enter Email')
         if not username:
@@ -81,4 +82,12 @@ class Grievance(models.Model):
             self.gk_id = new_id
 
         super(Grievance, self).save(*args, **kwargs)
+
+
+class OTP(models.Model):
+    key = models.EmailField()
+    otp_secret = models.CharField(max_length=255)
+    otp = models.CharField(max_length=10)
+    created_on = models.DateTimeField(auto_now_add=True)
+    updated_on = models.DateTimeField(null=True, blank=True)
 

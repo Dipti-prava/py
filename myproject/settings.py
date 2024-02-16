@@ -72,9 +72,11 @@ def get_custom_primary_key_settings():
 SIMPLE_JWT = {
     'TOKEN_OBTAIN_PAIR_SERIALIZER': 'myproject.myapp.serializers.CustomTokenObtainPairSerializer',
     'AUTH_HEADER_TYPES': ('Bearer',),
-    'ACCESS_TOKEN_LIFETIME': datetime.timedelta(minutes=int(os.getenv('TOKEN_EXPIRATION_TIME', 525960))),
+    # 'ACCESS_TOKEN_LIFETIME': datetime.timedelta(minutes=525960),
     # "ACCESS_TOKEN_LIFETIME": datetime.timedelta(minutes=30),
     # "REFRESH_TOKEN_LIFETIME": datetime.timedelta(days=1),
+    'ACCESS_TOKEN_LIFETIME': datetime.timedelta(days=1),  # Set access token lifetime to 10 minutes
+    'REFRESH_TOKEN_LIFETIME': datetime.timedelta(days=1),
     **get_custom_primary_key_settings(),
 }
 

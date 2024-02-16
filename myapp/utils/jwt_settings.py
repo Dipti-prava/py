@@ -1,4 +1,4 @@
-from rest_framework_simplejwt.tokens import Token
+from rest_framework_simplejwt.tokens import Token, RefreshToken
 from datetime import timedelta
 import logging
 
@@ -34,3 +34,12 @@ def custom_token_payload(user):
     token['exp'] = token.current_time + timedelta(days=1)  # Expiry time (e.g., 1 day)
 
     return token
+
+
+class CustomPayloadRefreshToken(RefreshToken):
+    def __init__(self, user_data):
+        super().__init__()
+        self['user_id'] = user_data['user_id']
+        self['username'] = user_data['username']
+        self['email'] = user_data['email']
+        self['is_admin'] = user_data['is_admin']

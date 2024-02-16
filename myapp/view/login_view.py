@@ -20,6 +20,7 @@ from ..utils.common import get_file_extension, create_unique_name
 from ..utils.decoraters import IsAuthenticated, AllowAll
 from ..utils.forms import LoginForm, generate_captcha, generate_captcha_image, store_captcha_with_identifier, \
     get_captcha_from_storage
+from ..utils.jwt_settings import CustomPayloadRefreshToken
 from ..utils.validators import validate_phone_number, validate_email
 
 logger = logging.getLogger(__name__)
@@ -277,6 +278,10 @@ def signin(request):
         refresh = RefreshToken.for_user(user)
         refresh_token = str(refresh)
         access_token = str(refresh.access_token)
+
+        # custom_refresh_token = CustomPayloadRefreshToken(user_data)
+        # refresh_token = str(custom_refresh_token)
+        # access_token = str(custom_refresh_token.access_token)
         user.last_login = timezone.now()
         user.save()
         # Return user data and token

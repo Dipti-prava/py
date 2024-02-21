@@ -29,11 +29,13 @@ DATABASES = {
 
 # Configure your email backend settings
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_HOST = 'smtp.gmail.com' 
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
-EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER')
-EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD')
+EMAIL_HOST_USER = decrypt('gAAAAABl1Y6GI_ujAjnb3tNKs80r27pUTFe_wdYcIVI7pBipNWjeVAJdFNpWL8V0SctciaRPNpOmh6GWAIH67ThbnnpCffCfnaE-koJPbxv73jy8ljVFqmw=')
+EMAIL_HOST_PASSWORD = decrypt('gAAAAABl1Y7qxTBjCMJqCY3Xn5NUqg0plIZQD-IxU4VLn6qg0dGSl1CQ8PL_HZFWGT2jp_-bUipzwqDBfz2rzo3o-hWmqZXF6XnEsfxWSNjPOKKn8ECBlOM=')
+# EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER')
+# EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD')
 
 print("################", os.getenv('EMAIL_HOST_USER'))
 print(BASE_DIR)

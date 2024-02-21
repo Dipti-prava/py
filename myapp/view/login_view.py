@@ -45,10 +45,12 @@ def send_otp(request):
     logger.info("OTP: %s", otp)
     # Send OTP via email
     subject = 'Verification OTP'
-    message = f'''Your OTP is: {otp}
+    message = f'''\
+    Your OTP is: {otp}
     It is valid for 10 minutes.
-    
-    WARNING: Please do not share this OTP with anyone.'''
+
+    WARNING: Please do not share this OTP with anyone.
+    '''
     try:
         result = send_mail(subject, message, None, [email])
         print(result)

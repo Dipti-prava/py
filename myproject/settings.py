@@ -16,6 +16,8 @@ import os
 import datetime
 from dotenv import load_dotenv
 
+from .config.crypt import decrypt
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -26,7 +28,8 @@ load_dotenv()
 # See https://docs.djangoproject.com/en/4.1/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = os.getenv('DJANGO_SECRET_KEY')
+# SECRET_KEY = os.getenv('DJANGO_SECRET_KEY')
+SECRET_KEY = decrypt('gAAAAABl1ZCZnkKRKhPSvUTcp0w2lr3HwSmX3xduXMD6ItXyQWeF4Ajx7kRBbplyYopn7hjaQruJwyaNEyf8pfNA28TD29EVXGDY9zOcJUOLBGFrxPzDF4c6eG1bTlSCz4HzVc982RtYOQp0f3-dwv6fVu7gHCrcwa5XYcs8WGDavIXJWFsvbV0=')
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 ALLOWED_HOSTS = ['*', 'localhost', '127.0.0.1']
